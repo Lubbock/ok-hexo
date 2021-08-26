@@ -1,3 +1,4 @@
+import com.lame.hexo.generateMiddleTree
 import com.lame.hexo.generateMindOptions
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.FalseFileFilter
@@ -202,10 +203,9 @@ private fun hexoMdTrans(fp: String, hexo: Hexo) {
     mds.forEach {
         headers.addAll(stragey02(it, fp, hexo))
     }
-    val aboutPage = generateMindOptions(headers)
-    FileUtils.writeLines(File(hexo.baseDir,"source/about/index.md")
-    ,"utf-8", arrayListOf(aboutPage)
-    )
+    val aboutPage = generateMiddleTree(headers)
+    FileUtils.writeLines(File(hexo.baseDir,"source/about/index.md"),
+        "utf-8", arrayListOf(aboutPage))
 }
 
 
