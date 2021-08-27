@@ -9,9 +9,12 @@ import java.security.MessageDigest
 
 
 object FingerprintUtils {
-    var SHA1 = "SHA1"
-    var SHA256 = "SHA-256"
-    var MD5 = "MD5"
+    /**
+     *     var SHA1 = "SHA1"
+     *     var SHA256 = "SHA-256"
+     *    var MD5 = "MD5"
+     * */
+
     fun calcFileFingerprint(file: File, algorithm: String?): String? {
         if (!file.isFile) {
             return null

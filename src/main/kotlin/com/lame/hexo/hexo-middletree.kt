@@ -1,6 +1,5 @@
 package com.lame.hexo
 
-import HexoHeader
 import com.google.gson.Gson
 
 import java.text.SimpleDateFormat

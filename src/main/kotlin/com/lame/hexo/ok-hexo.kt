@@ -1,5 +1,5 @@
-import com.lame.hexo.generateMiddleTree
-import com.lame.hexo.generateMindOptions
+package com.lame.hexo
+
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.FalseFileFilter
 import org.apache.commons.io.filefilter.FileFilterUtils
@@ -39,8 +39,8 @@ fun productHexoDescHeader(header: HexoHeader): String {
 fun copyDir(src: String, target: String) {
     FileUtils.copyDirectory(File(src), File(target))
 }
-
-const val regex = "!\\[.*\\]\\(.*\\)"
+//const val regex = "!\\[.*\\]\\(.*\\)"
+const val regex = "!\\[.*]\\(.*\\)"
 val pattern: Pattern = Pattern.compile(regex)
 fun innerImageTransform(line: String): String {
     if (line.contains("![") && line.contains("assets")) {
@@ -80,22 +80,6 @@ private fun hexoImgTrans(fp: String, hexo: Hexo) {
         }
 }
 
-/**
- * 解析md后直接搬运
- * */
-private fun strategy01(it: File, fp: String, hexo: Hexo) {
-    val lines = FileUtils.readLines(it)
-    val cgs =
-        it.parentFile.absolutePath.substring(File(fp).absolutePath.length).split("/").filter { it.isNotEmpty() }
-    val header = HexoHeader(it.name, Date(it.lastModified()), arrayListOf(it.name.substringBeforeLast(".")), cgs)
-    val newDocs = ArrayList<String>()
-    println("正在进行文件转换 $header")
-    newDocs.add(productHexoDescHeader(header))
-    lines.forEach { line ->
-        newDocs.add(innerImageTransform(line))
-    }
-    FileUtils.writeLines(File(hexo.post, it.name), "utf-8", newDocs)
-}
 
 
 data class OkHexoDoc(val name: String = "", val contents: ArrayList<String> = ArrayList(200))
@@ -134,10 +118,10 @@ private fun stragey02(f: File, fp: String, hexo: Hexo):ArrayList<HexoHeader> {
 
     val tempDirectoryPath = FileUtils.getTempDirectoryPath() + "/" + System.currentTimeMillis()
     val docFm = HashMap<String, OkHexoDoc>(50)
-    docs.forEach {
+    docs.forEach { doc ->
         var isCodeBut = false
-        var temp = ArrayList<String>()
-        it.contents.forEach {
+        val temp = ArrayList<String>()
+        doc.contents.forEach {
             if (it.startsWith("```")) {
                 isCodeBut = !isCodeBut
             } else {
@@ -145,15 +129,14 @@ private fun stragey02(f: File, fp: String, hexo: Hexo):ArrayList<HexoHeader> {
                     temp.add(it)
                 }
             }
-
         }
-        FileUtils.writeLines(File(tempDirectoryPath, it.name), temp)
-        docFm.put(it.name, it)
+        FileUtils.writeLines(File(tempDirectoryPath, doc.name), temp)
+        docFm[doc.name] = doc
     }
     val proc = Runtime.getRuntime()
         .exec("/usr/bin/python3 /media/lame/0DD80F300DD80F30/code/ok-hexo/scripts/py-text/extract.py $tempDirectoryPath")
-    val reader = BufferedReader(InputStreamReader(proc.getInputStream()))
-    var line: String? = ""
+    val reader = BufferedReader(InputStreamReader(proc.inputStream))
+    var line: String?
     val predicateTags = HashMap<String, Tag>(100)
     while (reader.readLine().also { line = it } != null) {
         if (line != null) {
@@ -173,7 +156,7 @@ private fun stragey02(f: File, fp: String, hexo: Hexo):ArrayList<HexoHeader> {
 
     val headers = ArrayList<HexoHeader>()
     docs.forEach { it ->
-        val cg = f.name.substringBeforeLast(".")
+        f.name.substringBeforeLast(".")
         val ptag = predicateTags.getOrDefault(it.name, Tag(it.name, ""))
         val ntags = ArrayList<String>()
         ptag.tags?.split(",")?.forEach {

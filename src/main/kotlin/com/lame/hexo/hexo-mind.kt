@@ -1,6 +1,5 @@
 package com.lame.hexo
 
-import HexoHeader
 import com.google.gson.Gson
 
 import java.text.SimpleDateFormat
@@ -29,7 +28,7 @@ data class TagScore(val nodeId: String, val score: Double, val linkCount: Int)
 
 fun generateMindOptions(headers: ArrayList<HexoHeader>): String {
     //[{"data":["c1","c2","c3"]}],
-    val gson= Gson()
+    val gson = Gson()
     val tags = HashSet<String>()
     val categories = HashSet<String>()
     val aliexs = ArrayList<EchartAliex>()
@@ -76,7 +75,7 @@ fun generateMindOptions(headers: ArrayList<HexoHeader>): String {
         siteNode["$index"] = node
         node
     }.toList()
-    val allLink = tagMaxScore.values.map { it.linkCount }.sum()
+    tagMaxScore.values.map { it.linkCount }.sum()
     var i = 0
     tagMaxScore.forEach { (t, u) ->
         val changeNode = siteNode[t]
@@ -104,7 +103,7 @@ fun generateMindOptions(headers: ArrayList<HexoHeader>): String {
                             in -30000.0..-150.0 -> node.x = linkNode.x - (Math.random() * (-150 + 300) - 300)
                         }
                         when (linkNode.y) {
-                            in 150.0..30000.0 -> node.y = linkNode.y + (Math.random() * (300 - 160) + 160)
+                            in 150.0..30000.0 -> node.y = linkNode.y + (Math.random() * (310 - 160) + 160)
                             in 0.0..150.0 -> node.y = linkNode.y - (Math.random() * (140 - 0) + 0)
                             in -150.0..0.0 -> node.y = linkNode.y - (Math.random() * (0 + 150) - 150)
                             in -30000.0..-150.0 -> node.y = linkNode.y - (Math.random() * (-150 + 300) - 300)
@@ -119,7 +118,7 @@ fun generateMindOptions(headers: ArrayList<HexoHeader>): String {
     //value 文档 tags得分的综合
     // link link根据tags相关程度，连接文档取最相关的
     //category 分类只取一级
-    var tpl = """
+    return """
 ---
 title: 随笔记概要
 date: ${sdf.format(Date())}
@@ -161,25 +160,4 @@ date: ${sdf.format(Date())}
     };
 {% endecharts %}
 """.trimIndent()
-    return tpl
-}
-
-
-class HexoDocChain() {
-    companion object {
-        private val HEADERS = HashMap<String, HexoHeader>()
-        fun accept(header: HexoHeader) {
-            HEADERS.put(header.title, header)
-        }
-    }
-}
-
-fun generateDocMind() {
-
-}
-
-
-fun main() {
-    val d = EchartCategory(arrayOf("c1", "c2", "c3"))
-
 }
