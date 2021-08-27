@@ -1,7 +1,8 @@
 package com.lame.hexo
 
 import HexoHeader
-import com.alibaba.fastjson.JSON
+import com.google.gson.Gson
+
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -11,6 +12,7 @@ import kotlin.collections.HashSet
 data class TreeNode(val name: String, var children: List<TreeNode>?, val value: Int?)
 
 fun generateMiddleTree(headers: ArrayList<HexoHeader>): String {
+    val gson=Gson()
     val root = TreeNode("随记", null, null)
     val tags = HashSet<String>()
     val categories = HashSet<String>()
@@ -63,7 +65,7 @@ date: ${sdf.format(Date())}
             {
                 type: 'tree',
 
-                data: [${JSON.toJSONString(root)}],
+                data: [${gson.toJson(root)}],
 
                 top: '18%',
                 bottom: '14%',

@@ -1,7 +1,8 @@
 package com.lame.hexo
 
 import HexoHeader
-import com.alibaba.fastjson.JSON
+import com.google.gson.Gson
+
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -28,6 +29,7 @@ data class TagScore(val nodeId: String, val score: Double, val linkCount: Int)
 
 fun generateMindOptions(headers: ArrayList<HexoHeader>): String {
     //[{"data":["c1","c2","c3"]}],
+    val gson= Gson()
     val tags = HashSet<String>()
     val categories = HashSet<String>()
     val aliexs = ArrayList<EchartAliex>()
@@ -127,7 +129,7 @@ date: ${sdf.format(Date())}
 
     option = {
         tooltip: {},
-        legend: [${JSON.toJSONString(echartCategory)}],
+        legend: [${gson.toJson(echartCategory)}],
          animationDuration: 1500,
         animationEasingUpdate: 'quinticInOut',
         series: [
@@ -135,9 +137,9 @@ date: ${sdf.format(Date())}
                 name: '随笔记',
                 type: 'graph',
                 layout: 'none',
-                data:  ${JSON.toJSONString(nodes)},
-                links: ${JSON.toJSONString(links)},
-                categories: ${JSON.toJSONString(aliexs)},
+                data:  ${gson.toJson(nodes)},
+                links: ${gson.toJson(links)},
+                categories: ${gson.toJson(aliexs)},
                 roam: true,
                 label: {
                     show: true,
@@ -179,5 +181,5 @@ fun generateDocMind() {
 
 fun main() {
     val d = EchartCategory(arrayOf("c1", "c2", "c3"))
-    println("${JSON.toJSONString(d)}")
+
 }
