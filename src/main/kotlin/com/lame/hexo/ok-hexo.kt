@@ -179,14 +179,14 @@ private fun stragey02(f: File, fp: String, hexo: Hexo):ArrayList<HexoHeader> {
 data class HexoHeaders(val headers: List<HexoHeader>)
 
 private fun generateHeaders(fp: String, headers: HexoHeaders): List<HexoHeader> {
-    val modifyCache = ".okmodify"
+    val modifyCache = ".okheader"
     val gson = Gson()
     val rtfile = File(fp, modifyCache)
     if (rtfile.exists()) {
         val cacheHeaders =
-            gson.fromJson(FileUtils.readFileToString(File(fp, modifyCache)), HexoHeaders::class.java).headers
+            gson.fromJson(FileUtils.readFileToString(File(fp, modifyCache)), HexoHeaders::class.java)?.headers
         val cacheHh = HashMap<String, HexoHeader>()
-        cacheHeaders.forEach { cacheHh[it.title] = it }
+        cacheHeaders?.forEach { cacheHh[it.title] = it }
         headers.headers.forEach { cacheHh[it.title] = it }
         FileUtils.writeLines(File(fp, modifyCache), arrayListOf(gson.toJson(HexoHeaders(cacheHh.values.toList()))))
         return cacheHh.values.toList()
@@ -213,7 +213,14 @@ private fun hexoMdTrans(fp: String, hexo: Hexo) {
         headers.addAll(stragey02(it, fp, hexo))
     }
     headers = ArrayList(generateHeaders(fp, HexoHeaders(headers)))
-    val aboutPage = generateMiddleTree(headers)
+    val random=Random()
+    val begin = random.nextInt(10)
+    val subHeaders = if (headers.size<20){
+        headers
+    }else{
+        headers.subList(begin, begin + 20)
+    }
+    val aboutPage = generateMiddleTree(ArrayList(subHeaders))
     FileUtils.writeLines(File(hexo.baseDir,"source/about/index.md"),
         "utf-8", arrayListOf(aboutPage))
 }

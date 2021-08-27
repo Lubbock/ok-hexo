@@ -16,7 +16,6 @@ fun generateMiddleTree(headers: ArrayList<HexoHeader>): String {
     val tags = HashSet<String>()
     val categories = HashSet<String>()
     val tagsTf = HashMap<String, Int>()
-
     val cgSitMap = HashMap<String, LinkedList<HexoHeader>>()
     headers.forEach {
         tags.addAll(it.tags)
@@ -52,7 +51,8 @@ fun generateMiddleTree(headers: ArrayList<HexoHeader>): String {
 title: 随笔记概要
 date: ${sdf.format(Date())}
 ---
-随笔记概要
+随机抽取的文档描述图表。
+
 {% echarts 800 '100%' %}
 
     option = {
@@ -63,25 +63,47 @@ date: ${sdf.format(Date())}
         series: [
             {
                 type: 'tree',
-
+            id: 0,
+            name: 'tree1',
                 data: [${gson.toJson(root)}],
 
-                top: '18%',
-                bottom: '14%',
+            top: '10%',
+            left: '8%',
+            bottom: '22%',
+            right: '20%',
 
-                layout: 'radial',
+            symbolSize: 7,
 
-                symbol: 'emptyCircle',
+            edgeShape: 'polyline',
+            edgeForkPosition: '63%',
+            initialTreeDepth: 3,
 
-                symbolSize: 7,
+            lineStyle: {
+                width: 2
+            },
 
-                initialTreeDepth: 3,
+            label: {
+                backgroundColor: '#fff',
+                position: 'left',
+                verticalAlign: 'middle',
+                align: 'right'
+            },
 
-                animationDurationUpdate: 750,
-
-                emphasis: {
-                    focus: 'descendant'
+            leaves: {
+                label: {
+                    position: 'right',
+                    verticalAlign: 'middle',
+                    align: 'left'
                 }
+            },
+
+            emphasis: {
+                focus: 'descendant'
+            },
+
+            expandAndCollapse: true,
+            animationDuration: 550,
+            animationDurationUpdate: 750
             }
         ]
     }
