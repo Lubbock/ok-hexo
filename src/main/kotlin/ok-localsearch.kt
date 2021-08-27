@@ -63,32 +63,31 @@ fun appendStr(bytes: ArrayList<Byte>, str: String) {
 }
 
 fun consoleSearch(keyword: String, article: String) {
-    val search = keyword
-    val bc = BmMatch(search)
+    val bc = BmMatch(keyword)
     val res = bc.match(article)
     println(res)
     var startIndex = 0
     val detailByteArray = article.toByteArray()
-    var modifyByte = ArrayList<Byte>()
-    val searchByteSize = search.toByteArray().size
+    val modifyByte = ArrayList<Byte>()
+    val searchByteSize = keyword.toByteArray().size
     for (re in res) {
         for (i in startIndex until re) {
             modifyByte.add(detailByteArray[i])
         }
         appendStr(modifyByte, "\u001B[48;31;45m")
-        appendStr(modifyByte, search)
+        appendStr(modifyByte, keyword)
         appendStr(modifyByte, "\u001B[1;0;0m")
         startIndex = re + searchByteSize
     }
     val lastIndex = res[res.size - 1]
-    var endIndex = lastIndex + searchByteSize
+    val endIndex = lastIndex + searchByteSize
     for (i in endIndex until article.toByteArray().size) {
         modifyByte.add(detailByteArray[i])
     }
     print(String(modifyByte.toByteArray()))
 }
 
-fun main(args: Array<String>) {
+fun main() {
     val article = """前言
 在绝大部分情况下我们在命令行终端或者控制台所输出的内容都是黑白色的，但是在使用 Spring Boot 与 IDEA 时却发现启动项目后在控制台竟然出现了彩色字体，那么这是这么实现的呢，其实就是用到了 ANSI 转义序列。
 

@@ -12,7 +12,7 @@ import kotlin.collections.HashSet
 data class TreeNode(val name: String, var children: List<TreeNode>?, val value: Int?)
 
 fun generateMiddleTree(headers: ArrayList<HexoHeader>): String {
-    val gson=Gson()
+    val gson = Gson()
     val root = TreeNode("随记", null, null)
     val tags = HashSet<String>()
     val categories = HashSet<String>()
@@ -26,7 +26,7 @@ fun generateMiddleTree(headers: ArrayList<HexoHeader>): String {
             tagsTf[tag] = ++count
         }
         categories.addAll(it.categories)
-        it.categories.forEach { cg->
+        it.categories.forEach { cg ->
             val docs = cgSitMap[cg] ?: LinkedList()
             docs.add(it)
             cgSitMap[cg] = docs
@@ -34,21 +34,21 @@ fun generateMiddleTree(headers: ArrayList<HexoHeader>): String {
     }
 
     val cgNodes = LinkedList<TreeNode>()
-    cgSitMap.forEach { t, u ->
+    cgSitMap.forEach { (t, u) ->
         val fileNodes = LinkedList<TreeNode>()
         val secondCg = TreeNode(t, fileNodes, null)
-        u.forEach { doc->
+        u.forEach { doc ->
             val tagNodes = LinkedList<TreeNode>()
             val fileNode = TreeNode(doc.title.substringBeforeLast("."), tagNodes, null)
             fileNodes.add(fileNode)
-            doc.tags.forEach { tagNodes.add(TreeNode(it,null,tagsTf[it])) }
+            doc.tags.forEach { tagNodes.add(TreeNode(it, null, tagsTf[it])) }
         }
         cgNodes.add(secondCg)
     }
     root.children = cgNodes
     val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     //root -> cgNode->fileNode->tagNode
-    var tpl = """
+    return """
 ---
 title: 随笔记概要
 date: ${sdf.format(Date())}
@@ -88,6 +88,5 @@ date: ${sdf.format(Date())}
     }
 {% endecharts %}
 """.trimIndent()
-    return tpl
 }
 
