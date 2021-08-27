@@ -1,7 +1,5 @@
 import com.google.gson.Gson
 import org.apache.commons.io.FileUtils
-import org.apache.commons.io.filefilter.FileFilterUtils
-import org.apache.commons.io.filefilter.TrueFileFilter
 import java.io.File
 import java.io.FileInputStream
 import java.math.BigInteger
@@ -65,42 +63,53 @@ fun calcFinger(files: Collection<File>): Map<String, Finger> {
     return fingers
 }
 
-fun listModifyFile(cahe: String, fp: String): MutableCollection<File> {
+data class ChangelogFile(
+    val add: MutableCollection<File>?,
+    val update: List<File>?,
+    val nc: List<File>?,
+    val delete: List<Finger>?
+)
+
+fun listModifyFile(fp: String, mds: Collection<File>): ChangelogFile {
     val gson = Gson()
-    val mds = FileUtils.listFiles(File(fp), FileFilterUtils.suffixFileFilter("md"), TrueFileFilter.INSTANCE)
     val docFingers = calcFinger(mds)
-    val fingerCache = File(cahe)
+    val modifyCache = ".okmodify"
+    val fingerCache = File(fp, modifyCache)
     val fileSite = HashMap<String, File>()
     mds.forEach { fileSite[it.absolutePath] = it }
-    val modifyFiles = ArrayList<File>()
+    val addFiles = ArrayList<File>()
+    val updateFiles = ArrayList<File>()
+    val deleteFiles = ArrayList<Finger>()
+    val ncFiles = ArrayList<File>()
     val changeFinger = HashMap<String, Finger>()
     if (fingerCache.exists()) {
         val readFileToString = FileUtils.readFileToString(fingerCache)
         val oldFingers = gson.fromJson(readFileToString, Fingers::class.java).finger
         //当前文档写入文件
-        FileUtils.writeLines(File(cahe), arrayListOf(gson.toJson(Fingers(docFingers))))
+        FileUtils.writeLines(File(fp, modifyCache), arrayListOf(gson.toJson(Fingers(docFingers))))
         docFingers.forEach { (t, u) ->
             if (!oldFingers.containsKey(t)) {
                 changeFinger[t] = u
+                fileSite[t]?.apply { addFiles.add(this) }
             } else {
                 oldFingers[t]?.apply {
                     if (this.finger != u.finger) {
                         changeFinger[t] = this
+                        fileSite[t]?.apply { updateFiles.add(this) }
+                    } else {
+                        fileSite[t]?.apply { ncFiles.add(this) }
                     }
                 }
             }
         }
-        changeFinger.keys.forEach {
-            fileSite[it]?.apply { modifyFiles.add(this) }
+        oldFingers.forEach { (t, u) ->
+            if (docFingers[t] == null) {
+                deleteFiles.add(u)
+            }
         }
-        return modifyFiles
+        return ChangelogFile(addFiles, updateFiles, ncFiles, deleteFiles)
     } else {
-        FileUtils.writeLines(File(cahe), arrayListOf(gson.toJson(Fingers(docFingers))))
-        return fileSite.values
+        FileUtils.writeLines(File(fp, modifyCache), arrayListOf(gson.toJson(Fingers(docFingers))))
+        return ChangelogFile(fileSite.values, null, null, null)
     }
-}
-
-fun main() {
-    val modifyFile = listModifyFile("/media/lame/0DD80F300DD80F30/document", "as.json")
-    modifyFile.forEach { println("变更文件\t${it.absolutePath}") }
 }

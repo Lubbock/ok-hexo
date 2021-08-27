@@ -1,5 +1,8 @@
 package com.lame.hexo
 
+import com.google.gson.Gson
+import listModifyFile
+import org.apache.commons.codec.binary.Hex
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.FalseFileFilter
 import org.apache.commons.io.filefilter.FileFilterUtils
@@ -173,7 +176,25 @@ private fun stragey02(f: File, fp: String, hexo: Hexo):ArrayList<HexoHeader> {
     return headers
 }
 
+data class HexoHeaders(val headers: List<HexoHeader>)
 
+private fun generateHeaders(fp: String, headers: HexoHeaders): List<HexoHeader> {
+    val modifyCache = ".okmodify"
+    val gson = Gson()
+    val rtfile = File(fp, modifyCache)
+    if (rtfile.exists()) {
+        val cacheHeaders =
+            gson.fromJson(FileUtils.readFileToString(File(fp, modifyCache)), HexoHeaders::class.java).headers
+        val cacheHh = HashMap<String, HexoHeader>()
+        cacheHeaders.forEach { cacheHh[it.title] = it }
+        headers.headers.forEach { cacheHh[it.title] = it }
+        FileUtils.writeLines(File(fp, modifyCache), arrayListOf(gson.toJson(HexoHeaders(cacheHh.values.toList()))))
+        return cacheHh.values.toList()
+    } else {
+        FileUtils.writeLines(File(fp, modifyCache), arrayListOf(gson.toJson(headers)))
+        return headers.headers
+    }
+}
 /**
  * typora hexo 文件转换
  * @param fp - 工程路径
@@ -182,10 +203,16 @@ private fun stragey02(f: File, fp: String, hexo: Hexo):ArrayList<HexoHeader> {
  * */
 private fun hexoMdTrans(fp: String, hexo: Hexo) {
     val mds = FileUtils.listFiles(File(fp), FileFilterUtils.suffixFileFilter("md"), TrueFileFilter.INSTANCE)
-    val headers = ArrayList<HexoHeader>()
-    mds.forEach {
+    val changeFile = listModifyFile(fp, mds)
+    var headers = ArrayList<HexoHeader>()
+    val modifyFiles = ArrayList<File>()
+    println(changeFile)
+    changeFile.add?.apply { modifyFiles.addAll(this) }
+    changeFile.update?.apply { modifyFiles.addAll(this) }
+    modifyFiles.forEach {
         headers.addAll(stragey02(it, fp, hexo))
     }
+    headers = ArrayList(generateHeaders(fp, HexoHeaders(headers)))
     val aboutPage = generateMiddleTree(headers)
     FileUtils.writeLines(File(hexo.baseDir,"source/about/index.md"),
         "utf-8", arrayListOf(aboutPage))
